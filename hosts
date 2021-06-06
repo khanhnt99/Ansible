@@ -1,0 +1,16 @@
+203.0.0.1
+
+[controller]
+controller ansible_host=203.0.0.2 ansible_port=22 ansible_user=root
+
+[network]
+network ansible_host=203.0.0.3 ansible_port=22 ansible_user=root
+
+[compute1]
+compute1 ansible_host=203.0.0.4 ansible_port=22 ansible_user=root
+
+[compute2]
+compute2 ansible_host=203.0.0.5 ansible_port=22 ansible_user=root
+
+[storage]
+storage ansible_host=203.0.0.6 ansible_port=22 ansible_user=root

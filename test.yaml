@@ -1,0 +1,55 @@
+#- hosts: 203.0.0.1
+#  remote_user: root
+#  tasks:
+#  - name: copy file to client
+#    shell: bash copy-file-netplan.sh
+
+- hosts: controller
+  remote_user: root
+  tasks:
+  - name: configure IP
+    shell: netplan apply
+  - name: set hostname
+    shell: hostnamectl set-hostname controller
+  - name: set timezone
+    shell: timedatectl set-timezone Asia/Ho_Chi_Minh
+
+- hosts: network
+  remote_user: root
+  tasks:
+  - name: configure IP
+    shell: netplan apply
+  - name: set hostname
+    shell: hostnamectl set-hostname network
+  - name: set timezone
+    shell: timedatectl set-timezone Asia/Ho_Chi_Minh
+
+- hosts: compute1
+  remote_user: root
+  tasks:
+  - name: configure IP
+    shell: netplan apply
+  - name: set hostname
+    shell: hostnamectl set-hostname compute1
+  - name: set timezone
+    shell: timedatectl set-timezone Asia/Ho_Chi_Minh
+
+- hosts: compute2
+  remote_user: root
+  tasks:
+  - name: configure IP
+    shell: netplan apply
+  - name: set hostname
+    shell: hostnamectl set-hostname compute2
+  - name: set timezone
+    shell: timedatectl set-timezone Asia/Ho_Chi_Minh
+
+- hosts: storage
+  remote_user: root
+  tasks:
+  - name: configure IP
+    shell: netplan apply
+  - name: set hostname
+    shell: hostnamectl set-hostname storage
+  - name: set timezone
+    shell: timedatectl set-timezone Asia/Ho_Chi_Minh
