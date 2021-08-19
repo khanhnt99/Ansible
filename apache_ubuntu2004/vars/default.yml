@@ -1,0 +1,5 @@
+---
+http_host: "example"
+http_conf: "example.conf"
+http_port: "80"
+disable_default: true
