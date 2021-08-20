@@ -1,0 +1,6 @@
+---
+http_host: "example.com"
+http_conf: "example.conf"
+mysql_root_password: "123456"
+http_port: "80"
+disable_default: true

@@ -1,0 +1,69 @@
+---
+- hosts: lamp-server
+  become: true
+  vars_files:
+    - vars/default.yaml
+  
+  tasks:
+    - name: Update apt-get repo and cache
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+    - name: Install LAMP packages
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2', 'mysql-server', 'php', 'php-mysql', 'python3-mysqldb', 'libapache2-mod-php' ]
+
+    # Apache config
+    - name: Create document root
+      file: 
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: root
+
+    - name: Set up Apache virtualhost
+      template: 
+        src: "files/apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+      notify: Reload Apache
+
+    - name: Enable new site
+      shell: /usr/sbin/a2ensite {{ http_conf }}
+      notify: Reload Apache
+    
+    - name: Disable default Apache site 
+      shell: /usr/sbin/a2dissite 000-default.conf
+      when: disable_default
+      notify: Reload Apache
+
+    # Mysql config
+    # - name: Sets the root password
+    #   mysql_user:
+    #     name: root
+    #     password: "{{ mysql_root_password }}"
+    #     login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Remove all anonymous user accounts
+      mysql_user: 
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    # PHP info page
+    - name: Sets up PHP info page
+      template: 
+        src: "files/info.php.j2"
+        dest: "/var/www/{{ http_host }}/info.php"
+
+  handlers:
+    - name: Reload Apache
+      service:
+        name: apache2
+        state: reloaded
+    
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+
+    
