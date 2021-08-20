@@ -1,0 +1,10 @@
+php_modules: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+
+mysql_root_password: "mysql_root_password"
+mysql_db: "wordpress"
+mysql_user: khanhnt99
+mysql_password: "123456"
+
+http_host: "wordpress-host"
+http_conf: "wordpress.conf"
+http_port: "80"

@@ -1,0 +1,116 @@
+--- 
+- hosts: word-press
+  become: true
+  vars_files:
+    - vars/default.yaml
+
+  tasks:
+    - name: Update apt repo and cache
+      apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+    - name: Install LAMP
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: ['apache2', 'mysql-server', 'python3-mysqldb', 'php', 'php-mysql', 'libapache2-mod-php']
+
+    - name: Install php Extentions
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: "{{ php_modules }}"
+
+    # Config apache
+    - name: Create document root
+      file: 
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "www-data"
+        group: "www-data"
+        mode: '0755'
+
+    - name: Set up Apache VirtualHost
+      template: 
+        src: "files/apache.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
+      notify: Reload Apache
+
+    - name: Enable rewrite module
+      shell: /usr/sbin/a2enmod rewrite
+      notify: Reload Apache
+
+    - name: Enable new site
+      shell: /usr/sbin/a2ensite {{ http_conf }}
+      notify: Reload Apache
+
+    - name: Disable default Apache site
+      shell: /usr/sbin/a2dissite 000-default.conf
+      notify: Restart Apache
+
+    # Mysql configuration
+    - name: Set root password
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: remove all anonymous user accounts
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Create database for WP
+      mysql_db:
+        name: "{{ mysql_db }}"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [mysql]
+
+    - name: Create mysql user for WP
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        priv: "{{ mysql_db }}.*:ALL"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+    
+    # Wordpress config
+    - name: Download and unpack latest Wordpress
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: "/var/www/{{ http_host }}"
+        remote_src: yes
+        creates: "/var/www/{{ http_host }}/wordpress"
+
+    - name: Set ownership
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
+
+    - name: Set up wp-config
+      template: 
+        src: "files/wp-config.php.j2"
+        dest: "/var/www/{{ http_host }}/wordpress/wp-config.php"
+
+  handlers:
+    - name: Reload Apache
+      service: 
+        name: apache2
+        state: reloaded
+
+    - name: Restart Apache
+      service: 
+        name: apache2
+        state: restarted
+
+    
+
+
+    
+
+
+
