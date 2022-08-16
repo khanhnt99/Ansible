@@ -1,0 +1,29 @@
+---
+- hosts: glusterfs
+  become: true
+  tasks:
+    - name: Install prerequisites
+      apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+      tags: [ system ]
+
+    - name: Install glusterfs-server
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'glusterfs-server', 'glusterfs-client']
+      tags: [ glusterfs ]
+
+    - name: Ensure GlusterFS is started and enabled at boot.
+      service: "name=glusterd state=started enabled=yes"
+      tags: [ glusterfs ]
+
+    - name: Configure gluster peers (only first hosts)
+      shell: gluster peer probe {{item}}
+      with_items: "{{ groups['glusterfs'] }}"
+      when: inventory_hostname == groups.glusterfs[0]
+      tags: [ glusterfs ]
+
+    - name: Disable the ufw firewall (on Ubuntu, if configured).
+      service:
+        name: ufw
+        state: stopped
+        enabled: false
+
