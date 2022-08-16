@@ -1,0 +1,16 @@
+---
+# System Settings
+php_modules: [ 'php-curl', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip']
+
+# Mysql Settings
+mysql_root_password: "vccloud123"
+mysql_db: "wordpress"
+mysql_user: "khanhnt"
+mysql_password: "vccloud123"
+
+# HTTP Settings
+http_host: "ansible.wordpress.test.com"
+http_conf: "ansible.wordpress.test.com.conf"
+http_port: "80"
+
+
