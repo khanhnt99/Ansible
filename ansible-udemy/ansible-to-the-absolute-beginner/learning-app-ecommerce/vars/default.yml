@@ -1,0 +1,8 @@
+# Mysql Settings
+mysql_root_password: "test123"
+mysql_db: "ecomdb"
+mysql_user: "ecomuser"
+mysql_password: "ecompassword"
+
+# HTTP Settings
+http_port: "80"

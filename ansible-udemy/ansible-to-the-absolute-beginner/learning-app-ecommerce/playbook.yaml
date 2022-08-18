@@ -1,0 +1,104 @@
+---
+- hosts: web_server
+  become: true
+  vars_files:
+    - vars/default.yml
+  tasks:
+    - name: Install prerequisites
+      apt: name=aptitude update_cache=yes state=latest force_apt_get=yes
+      tags: [system]
+
+    - name: Install LAMP packages
+      apt: name={{ item }} update_cache=yes state=latest
+      with_items:
+        - apache2
+        - mariadb-server
+        - php 
+        - libapache2-mod-php 
+        - php-mysql 
+
+    # Apache Configuration
+    - name: Delete content & directory /var/www/html
+      file:
+        state: absent
+        path: /var/www/html
+   
+    - name: Clone repository to /var/www/html/
+      git:
+        repo: https://github.com/kodekloudhub/learning-app-ecommerce.git
+        dest: /var/www/html/
+        force: true
+      notify: Restart Apache
+
+    - name: Change DirectoryIndex 
+      replace:
+        path: /var/www/html/index.php
+        regexp: '172.20.1.101'
+        replace: 'localhost'
+
+    # Mysql Configuration
+    - name: "Install ansible python3 mysql dependency"
+      apt:
+        name: python3-mysqldb
+        state: latest
+
+    - name: Set the root password
+      mysql_user: 
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      tags: [ mysql, mysql-root ]
+
+    - name: Remove all anonymous user accounts
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+
+    - name: Creates database for web
+      mysql_db:
+        name: "{{ mysql_db }}"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+
+    - name: Import db-load-script.sql
+      mysql_db:
+        state: import
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        name: "{{ mysql_db }}"
+        target: /var/www/html/assets/db-load-script.sql
+
+    - name: Create MySQL user for web
+      mysql_user:
+        name: "{{ mysql_user }}"
+        password: "{{ mysql_password }}"
+        priv: "{{ mysql_db }}.*:ALL"
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+      tags: [ mysql ]
+
+    # ufw configuration
+    - name: "UFW - Allow HTTP on port {{ http_port }}"
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+      tags: [ system ] 
+
+  handlers:
+    - name: Reload Apache
+      service:
+        name: apache2
+        state: reloaded
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted    
