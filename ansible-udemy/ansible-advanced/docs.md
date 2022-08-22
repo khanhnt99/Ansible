@@ -104,3 +104,56 @@
   - flask_web
 ```
 
+## 4. Asynchronous actions
+- Run a process and check on it later
+- Run multiple processes at once and check on them later
+- Run processes and forget
+- `async`: how long to run?
+- `poll`: how frequently to check ? (default 10 seconds)
+- `registrer: webapp_result`
+
+-  Monitor the web application for 6 minutes to ensure its running OK. But dont want to hold the SSH connection. 
+
+  ```
+  -
+    name: Monitor Web Application for 6 Minutes
+    hosts: web_server
+    command: /opt/monitor_webapp.py
+    async: 360
+  ```
+
+- `https://medium.com/@knoldus/ansible-asynchronous-actions-and-polling-9e8ede5c3032`
+
+```
+-
+  name: Deploy a mysql DB
+  hosts: db_server
+  roles:
+    - python
+    - mysql_db
+
+-
+  name: Deploy a Web Server
+  hosts: web_server
+  roles:
+    - python
+    - flask_web
+
+-
+  name: Monitor Web Application for 6 Minutes
+  hosts: web_server
+  command: /opt/monitor_webapp.py
+  async: 360
+  poll: 0
+
+-
+  name: Monitor Database for 6 Minutes
+  hosts: db_server
+  command: /opt/monitor_database.py
+  async: 360
+  poll: 0
+```
+
+- `https://www.middlewareinventory.com/blog/ansible-async/`
+
+
