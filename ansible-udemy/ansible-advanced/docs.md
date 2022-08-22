@@ -76,3 +76,31 @@
 - Folder
     - group_vars
     - tasks
+
+## 3. Roles
+- `ansible-galaxy init webserver`
+- **`webserver`**
+  + `tests`
+  + `tasks`
+  + `handlers`
+  + `vars`
+  + `defaults`
+  + `meta`
+- `ansible-galaxy import webserver`
+- `ansible-galaxy init mysql_db`
+- `ansible-galaxy init flask_web`
+
+```
+- 
+  name: Deploy database
+  hosts: db_server
+  roles:
+  - mysql_db
+
+- 
+  name: Deploy web application
+  hosts: web_server
+  roles: 
+  - flask_web
+```
+
