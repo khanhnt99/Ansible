@@ -71,3 +71,8 @@
       shell: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0 &
       
 ```
+
+## 2. File Separation
+- Folder
+    - group_vars
+    - tasks
