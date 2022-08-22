@@ -105,11 +105,10 @@
 ```
 
 ## 4. Asynchronous actions
-- Run a process and check on it later
-- Run multiple processes at once and check on them later
-- Run processes and forget
-- `async`: how long to run?
-- `poll`: how frequently to check ? (default 10 seconds)
+- Async được kích hoạt khi chạy ansible daemon và có thể được kiểm tra lại sau đó.
+- Giá trị async là thời gian tối đa mà ansible sẽ đợi cho 1 job đó.
+- `async`: how long to run? -> cho biết job được chạy trong bao lâu trước khi Ansible từ bỏ nó -> Bằng cách nào ansible có thể kiểm tra trạng thái của các job này trong daemon -> poll.
+- `poll`: how frequently to check ? (default 10 seconds) -> Tần suất kiểm tra trạng thái job đó.
 - `registrer: webapp_result`
 
 -  Monitor the web application for 6 minutes to ensure its running OK. But dont want to hold the SSH connection. 
@@ -156,4 +155,10 @@
 
 - `https://www.middlewareinventory.com/blog/ansible-async/`
 
+## 7. Strategy
+- Strategy define how a playbook is executed in Ansible.
+- Default: linear (các task thực thi lần lượt trên tất cả các server thành công rồi mới đến task tiếp theo)
+- Free
+- serial: 3 (chỉ thực hiện chạy trên 3 server từng thời điểm)
 
+## 8. Error Handling
