@@ -105,7 +105,7 @@
 ```
 
 ## 4. Asynchronous actions
-- Async được kích hoạt khi chạy ansible daemon và có thể được kiểm tra lại sau đó.
+- Async được kích hoạt khi chạy ansible nền (daemon) và có thể được kiểm tra lại sau đó.
 - Giá trị async là thời gian tối đa mà ansible sẽ đợi cho 1 job đó.
 - `async`: how long to run? -> cho biết job được chạy trong bao lâu trước khi Ansible từ bỏ nó -> Bằng cách nào ansible có thể kiểm tra trạng thái của các job này trong daemon -> poll.
 - `poll`: how frequently to check ? (default 10 seconds) -> Tần suất kiểm tra trạng thái job đó.
@@ -162,3 +162,153 @@
 - serial: 3 (chỉ thực hiện chạy trên 3 server từng thời điểm)
 
 ## 8. Error Handling
+### Task Failure
+- Sử dụng khi muốn stop ansible playbook khi 1 trong số các server fail (bình thường playbook sẽ vẫn chạy và skip tại các server fail) -> Sử dụng option `any_errors_fatal: true`.
+
+### Ignore errors, failed_when
+- Không quan tâm task sẽ được hoàn thành hay không -> `ingore_errors: yes`
+
+```
+- command: cat /var/log/server.log
+  register: command_output
+  failed_when: "'ERROR'" in command_output.stdout"
+```
+
+## 9. Jinja2
+
+```
+-
+  name: Test Jinja2 Templating
+  hosts: localhost
+  vars:
+    first_name: james
+    last_name: bond
+  tasks:
+  - debug:
+      msg: 'The name is {{ last_name }}! {{ first_name }} {{ last_name }}!'
+```
+
+```
+-
+  name: Test Jinja2 Templating
+  hosts: localhost
+  vars:
+    first_name: james
+    last_name: bond
+  tasks:
+  - debug:
+      msg: 'The name is {{ last_name | title }}! {{ first_name | title }} {{ last_name | title }}!'
+```
+
+```
+-
+  name: Test Jinja2 Templating
+  hosts: localhost
+  vars:
+    array_of_numbers:
+      - 12
+      - 34
+      - 06
+      - 34
+  tasks:
+  - debug:
+      msg: 'Lowest = {{ array_of_numbers | min }} '
+```
+
+- Hợp nhất của 2 list 
+```
+-
+  name: Install Dependencies
+  hosts: localhost
+  vars:
+    web_dependencies:
+         - python
+         - python-setuptools
+         - python-dev
+         - build-essential
+         - python-pip
+         - python-mysqldb
+    sql_dependencies:
+         - python
+         - python-mysqldb
+  tasks:
+  - name: Install dependencies
+    apt: name='{{ item }}' state=present
+    with_items: '{{  web_dependencies | union(sql_dependencies) }}'
+```
+- Tạo các file có dang random_file_0,1,...Random từ 1 -> 1000
+
+```
+-
+  name: Generate random file name
+  hosts: localhost
+  tasks:
+  - name: Install dependencies
+    file:
+      path: /tmp/random_file"{{ 1000 | random }}"
+      state: touch
+```
+
+- Return true nếu IP address có tồn tại. Return fail nếu IP address không tồn tại.
+
+```
+-
+  name: Test valid IP Address
+  hosts: localhost
+  vars:
+    ip_address: 192.168.1.6
+  tasks:
+  - name: Test IP Address
+    debug:
+      msg: IP Address = {{ ip_address | ipaddr }}
+```
+
+## 10. Lookups
+- csv file
+```
+# credentials.csv
+# Credentials File
+Hostname,Password
+web_server,Passw0rd
+db_server,Passw0rd
+```
+
+```
+-
+  name: Test Connectivity
+  hosts: web_server
+  vars:
+    ansible_ssh_pass: "{{ lookup('csvfile', 'web_server file=credentials.csv delimiter=,') }}"
+  tasks:
+  - name: Ping target host
+    ping:
+           data: "Test"
+```
+- ini file
+```
+# credentials.ini
+
+# Credentials File
+
+[web_server]
+password=Passw0rd
+
+[db_server]
+password=Passw0rd
+```
+
+```
+-
+  name: Test Connectivity
+  hosts: web_server
+  vars:
+    ansible_ssh_pass: "{{ lookup('ini', 'password section=web_server file=credentials.ini') }}"
+  tasks:
+  - name: Ping target host
+    ping:
+           data: "Test"
+```
+## 11. Vault
+## 12. Dynamic inventory
+
+
